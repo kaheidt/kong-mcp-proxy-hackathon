@@ -50,7 +50,7 @@ graph TB
 
 ### Enterprise-Grade Security
 - **OAuth 2.1/OIDC integration** with Auth0, Okta, and more
-- **Scope-based access control** - users only see tools they can access
+- **[Dynamic tool filtering](#-dynamic-tool-filtering-based-on-jwt-claims)** - users only see tools they're authorized to use
 - **JWT validation** with RSA signature verification
 - **Production-ready authentication**
 
@@ -265,7 +265,84 @@ plugins:
 3. Create new token with `Control Planes Admin` permissions
 4. Copy token to your `.env` file
 
-## 🔧 Available Commands
+## � Dynamic Tool Filtering Based on JWT Claims
+
+One of the most powerful security features of Kong MCP Proxy is **dynamic tool filtering** based on JWT token claims. This ensures users only see and can execute tools they're authorized to access.
+
+### How Tool Filtering Works
+
+The MCP server plugin examines JWT claims (specifically the `permissions` array) and filters the available tools based on the access control requirements defined in each MCP tool plugin configuration.
+
+### Real-World Example
+
+With the sample deck configuration (`mcp-test-local.deck.yaml`), different users see different tools based on their JWT permissions:
+
+#### User with Basic Gateway Access
+**JWT Claims:**
+```json
+{
+  "permissions": [
+    "invoke:gateway",
+    "read:gateway"
+  ]
+}
+```
+
+**Available Tools:** **6 tools** (Gateway endpoints only)
+- `public_get_get` - HTTP GET test
+- `public_get_status_200` - Return status 200  
+- `public_post_post` - HTTP POST test
+- `requestcatcher_get_root` - Capture GET request
+- `requestcatcher_post_post` - Capture POST request
+- `widgetarium_get_widgets` - List widget configurations
+
+#### User with Kong Admin Access
+**JWT Claims:**
+```json
+{
+  "permissions": [
+    "invoke:gateway",
+    "kong:read", 
+    "kong:write",
+    "read:gateway"
+  ]
+}
+```
+
+**Available Tools:** **10 tools** (Gateway + Kong Admin)
+- All 6 gateway tools from above, **PLUS:**
+- `kong_admin_get_metrics` - Get Kong Prometheus metrics
+- `kong_admin_get_plugins` - List Kong plugins
+- `kong_admin_get_status` - Get Kong runtime status
+- `kong_admin_post_plugins` - Create new Kong plugin
+
+### Configuration Example
+
+Here's how tool filtering is configured in the MCP tool plugin:
+
+```yaml
+plugins:
+- name: mcp-tool
+  config:
+    tool_prefix: "kong_admin"
+    access_control:
+      default_requirements:
+      - claim_name: "permissions"
+        claim_values: ["kong:read", "kong:write"] 
+        match_type: "any"  # User needs ANY of these permissions
+```
+
+### Security Benefits
+
+- **Principle of Least Privilege**: Users only see tools they can actually use
+- **Zero Trust Architecture**: Every tool access is validated against JWT claims
+- **Audit-Ready**: All tool filtering decisions are logged for compliance
+- **Flexible Permissions**: Support for complex claim matching (any/all requirements)
+- **Dynamic Updates**: Tool visibility changes instantly when JWT permissions change
+
+> 💡 **Pro Tip**: This filtering happens at tool discovery time (`tools/list`) AND execution time (`tools/call`), providing defense-in-depth security.
+
+## �🔧 Available Commands
 
 ### Deployment Commands
 ```powershell
@@ -329,7 +406,7 @@ $body = @{
 Invoke-RestMethod -Uri "http://localhost:8000/mcp" -Method POST -Body $body -ContentType "application/json"
 ```
 
-### With OAuth Authentication
+### With OAuth Authentication & Tool Filtering
 ```powershell
 # Get OAuth token first
 $tokenResponse = Invoke-RestMethod -Uri "https://your-auth0-domain.auth0.com/oauth/token" -Method POST -Body @{
@@ -339,10 +416,16 @@ $tokenResponse = Invoke-RestMethod -Uri "https://your-auth0-domain.auth0.com/oau
     grant_type = "client_credentials"
 } -ContentType "application/x-www-form-urlencoded"
 
-# Use token in MCP request
+# Use token in MCP request - tool list will be filtered based on JWT claims
 $headers = @{ 'Authorization' = "Bearer $($tokenResponse.access_token)" }
-Invoke-RestMethod -Uri "http://localhost:8000/mcp" -Method POST -Body $body -Headers $headers -ContentType "application/json"
+$response = Invoke-RestMethod -Uri "http://localhost:8000/mcp" -Method POST -Body $body -Headers $headers -ContentType "application/json"
+
+# Display filtered tools (count varies based on JWT permissions - see Tool Filtering section)
+Write-Host "Available tools based on your permissions:"
+$response.result.tools | ForEach-Object { Write-Host "- $($_.name): $($_.description)" }
 ```
+
+> 🔐 **Security Note**: The number of tools returned depends on your JWT claims. See [Dynamic Tool Filtering](#-dynamic-tool-filtering-based-on-jwt-claims) for details on how permissions control tool visibility.
 
 ## 🎯 Hackathon Highlights
 
@@ -350,7 +433,7 @@ Invoke-RestMethod -Uri "http://localhost:8000/mcp" -Method POST -Body $body -Hea
 
 1. **Revolutionary Concept**: First Kong plugin to expose MCP protocol - creating a new category
 2. **Zero-Code Solution**: Any API becomes AI-accessible without custom development
-3. **Enterprise-Ready**: Production OAuth, scope-based access control, and Kong-native architecture
+3. **Enterprise-Ready**: Production OAuth with [intelligent tool filtering](#-dynamic-tool-filtering-based-on-jwt-claims) and Kong-native architecture
 4. **Real AI Integration**: Tested with VS Code Copilot and Claude Desktop
 5. **Extensible Platform**: Foundation for advanced MCP features (resources, prompts, etc.)
 
@@ -358,7 +441,7 @@ Invoke-RestMethod -Uri "http://localhost:8000/mcp" -Method POST -Body $body -Hea
 
 - **Protocol Bridge**: First implementation bridging Kong Gateway with MCP ecosystem
 - **AI-First Design**: Purpose-built for AI application integration
-- **Security-First Approach**: OAuth 2.1 compliance with granular permissions
+- **Security-First Approach**: OAuth 2.1 compliance with [dynamic tool filtering](#-dynamic-tool-filtering-based-on-jwt-claims) based on JWT claims
 - **Developer Experience**: Simple configuration, powerful results
 - **Future-Proof Architecture**: Ready for advanced MCP features
 
@@ -367,7 +450,7 @@ Invoke-RestMethod -Uri "http://localhost:8000/mcp" -Method POST -Body $body -Hea
 1. **Show Problem**: Complex API integration for AI applications
 2. **Reveal Solution**: Drop OpenAPI spec → Get MCP tools instantly  
 3. **Live Demo**: VS Code connecting to Kong MCP proxy
-4. **Security Demo**: OAuth-protected tools with scope filtering
+4. **Security Demo**: [Dynamic tool filtering](#-dynamic-tool-filtering-based-on-jwt-claims) - watch tool count change based on JWT permissions!
 5. **Scale Demo**: Multiple APIs exposed through single MCP endpoint
 
 ## 🔍 Technical Implementation Notes
@@ -387,7 +470,7 @@ Invoke-RestMethod -Uri "http://localhost:8000/mcp" -Method POST -Body $body -Hea
 
 ### Security Model
 - **Defense in Depth**: Multiple validation layers
-- **Scope-Based Access**: Tools filtered by JWT claims
+- **[Dynamic Tool Filtering](#-dynamic-tool-filtering-based-on-jwt-claims)**: Tools filtered by JWT claims at discovery AND execution time
 - **Signature Verification**: Full RSA cryptographic validation
 - **Audit Trail**: Comprehensive logging for security monitoring
 
