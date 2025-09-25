@@ -300,6 +300,7 @@ The plugin uses OpenAPI specification fields to create tool descriptions that AI
 | `ID` | Konnect cluster id (prefix before `.us.cp.konghq.com:443`) | `abcd123456` | ✅ |
 
 ### Getting Your Konnect Token
+The token is used for registering custom plugins, and for executing deck commands.
 1. Log into [Konnect](https://cloud.konghq.com)
 2. Navigate to **Personal Access Tokens**
 3. Create new token with `Control Planes Admin` permissions
