@@ -1,0 +1,53 @@
+# OS and IDE files
+.DS_Store
+.at
+.vs/
+*.swp
+*.swo
+*~
+
+# Build outputs
+src/**/**/obj/
+src/**/**/bin/
+**/obj/
+**/bin/
+
+# Logs
+src/**/**/logs/
+*.log
+**/*.log
+logs/
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.template
+appsettings.Development.json
+appsettings.Production.json
+
+# Konnect tokens and sensitive scripts
+curl-commands.txt
+# register-schemas.sh
+# register-schemas.ps1
+# register-schemas-correct.sh
+**/kpat_*
+**/*token*
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Node modules (if any)
+node_modules/
+
+
+# Temporary files
+*.tmp
+*.temp
+
+
+/src/BacktestingEngine/reports/*
+
+/tests/BacktestingEngine.Unit.Tests/TestResults/*
+certs/*
