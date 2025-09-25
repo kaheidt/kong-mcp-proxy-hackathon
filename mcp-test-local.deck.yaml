@@ -1,0 +1,536 @@
+_format_version: "3.0"
+plugins:
+- config:
+    ai_metrics: false
+    bandwidth_metrics: false
+    latency_metrics: false
+    per_consumer: false
+    status_code_metrics: false
+    upstream_health_metrics: false
+    wasm_metrics: false
+  enabled: true
+  name: prometheus
+  protocols:
+  - grpc
+  - grpcs
+  - http
+  - https
+services:
+- connect_timeout: 60000
+  enabled: true
+  host: httpbin.org
+  name: httpbin-service
+  port: 443
+  protocol: https
+  read_timeout: 60000
+  retries: 5
+  routes:
+  - expression: http.path == "/widgets" || http.path ^= "/widgets/"
+    https_redirect_status_code: 426
+    name: widgets-route
+    plugins:
+    - config:
+        access_control: null
+        api_specification: '{     "openapi": "3.0.1",     "info": {         "license":
+          {             "name": "MIT",             "url": "https://opensource.org/licenses/MIT"         },         "title":
+          "Widgets",         "description": "Widgets POC",         "version": "1.1.0"     },     "servers":
+          [         {             "url": "http://localhost"         }     ],     "paths":
+          {         "/widgets": {             "get": {                 "operationId":
+          "get-widgets",                 "summary": "Retrieves a list of widget configurations
+          representing modular UI components or service integrations used in the live
+          multi-region environment. Each widget includes metadata such as its ID,
+          name, live status, and reference URL. Useful for validating deployment status
+          and availability of widgets in production-like conditions.",                 "responses":
+          {                     "200": {                         "description": "200
+          response",                         "content": {                             "application/json":
+          {                                 "schema": {                                     "$ref":
+          "#/components/schemas/widgets"                                 }                             }                         }                     },                     "401":
+          {                         "description": "Unauthorized"                     }                 },                 "security":
+          [                     {                         "accessCode": [                             "widgets.read"                         ]                     }                 ]             }         }     },     "components":
+          {         "schemas": {             "widgets": {                 "title":
+          "Widgets",                 "type": "object",                 "properties":
+          {                     "items": {                         "type": "array",                         "items":
+          {                             "required": [                                 "id",                                 "live",                                 "name"                             ],                             "type":
+          "object",                             "properties": {                                 "id":
+          {                                     "type": "string",                                     "description":
+          "The Id of the widget"                                 },                                 "name":
+          {                                     "type": "string",                                     "description":
+          "The name of the widget"                                 },                                 "live":
+          {                                     "type": "boolean",                                     "description":
+          "Is the widget currently live?"                                 },                                 "href":
+          {                                     "type": "string",                                     "description":
+          "Location to this resource"                                 }                             }                         }                     },                     "count":
+          {                         "minimum": 0,                         "type":
+          "integer",                         "description": "Number of results returned"                     },                     "href":
+          {                         "type": "string",                         "description":
+          "Location to this resource"                     },                     "environment":
+          {                         "type": "string",                         "description":
+          "The environment the response is returning from"                     },                     "region":
+          {                         "type": "string",                         "description":
+          "The region the response is returning from"                     }                 }             }         },         "securitySchemes":
+          {             "accessCode": {                 "type": "oauth2",                 "flows":
+          {                     "clientCredentials": {                         "tokenUrl":
+          "https://some-oauth.com/token",                         "scopes": {                             "widgets.read":
+          "read some widgets",                             "widgets.write": "write
+          some widgets"                         }                     }                 }             }         }     }
+          }'
+        enabled: true
+        tool_prefix: widgetarium
+      enabled: true
+      name: mcp-tool
+      protocols:
+      - http
+      - https
+    - config:
+        api_specification: |-
+          {
+              "openapi": "3.0.1",
+              "info": {
+                  "license": {
+                      "name": "MIT",
+                      "url": "https://opensource.org/licenses/MIT"
+                  },
+                  "title": "Widgets",
+                  "description": "Widgets POC",
+                  "version": "1.1.0"
+              },
+              "servers": [
+                  {
+                      "url": "http://localhost"
+                  }
+              ],
+              "paths": {
+                  "/widgets": {
+                      "get": {
+                          "operationId": "get-widgets",
+                          "summary": "Retrieves a list of widget configurations representing modular UI components or service integrations used in the live multi-region environment. Each widget includes metadata such as its ID, name, live status, and reference URL. Useful for validating deployment status and availability of widgets in production-like conditions.",
+                          "responses": {
+                              "200": {
+                                  "description": "200 response",
+                                  "content": {
+                                      "application/json": {
+                                          "schema": {
+                                              "$ref": "#/components/schemas/widgets"
+                                          }
+                                      }
+                                  }
+                              },
+                              "401": {
+                                  "description": "Unauthorized"
+                              }
+                          },
+                          "security": [
+                              {
+                                  "accessCode": [
+                                      "widgets.read"
+                                  ]
+                              }
+                          ]
+                      }
+                  }
+              },
+              "components": {
+                  "schemas": {
+                      "widgets": {
+                          "title": "Widgets",
+                          "type": "object",
+                          "properties": {
+                              "items": {
+                                  "type": "array",
+                                  "items": {
+                                      "required": [
+                                          "id",
+                                          "live",
+                                          "name"
+                                      ],
+                                      "type": "object",
+                                      "properties": {
+                                          "id": {
+                                              "type": "string",
+                                              "description": "The Id of the widget"
+                                          },
+                                          "name": {
+                                              "type": "string",
+                                              "description": "The name of the widget"
+                                          },
+                                          "live": {
+                                              "type": "boolean",
+                                              "description": "Is the widget currently live?"
+                                          },
+                                          "href": {
+                                              "type": "string",
+                                              "description": "Location to this resource"
+                                          }
+                                      }
+                                  }
+                              },
+                              "count": {
+                                  "minimum": 0,
+                                  "type": "integer",
+                                  "description": "Number of results returned"
+                              },
+                              "href": {
+                                  "type": "string",
+                                  "description": "Location to this resource"
+                              },
+                              "environment": {
+                                  "type": "string",
+                                  "description": "The environment the response is returning from"
+                              },
+                              "region": {
+                                  "type": "string",
+                                  "description": "The region the response is returning from"
+                              }
+                          }
+                      }
+                  },
+                  "securitySchemes": {
+                      "accessCode": {
+                          "type": "oauth2",
+                          "flows": {
+                              "clientCredentials": {
+                                  "tokenUrl": "https://some-oauth.com/token",
+                                  "scopes": {
+                                      "widgets.read": "read some widgets",
+                                      "widgets.write": "write some widgets"
+                                  }
+                              }
+                          }
+                      }
+                  }
+              }
+          }
+        api_specification_filename: null
+        custom_base_path: null
+        include_base_path: false
+        included_status_codes: null
+        max_delay_time: 1
+        min_delay_time: 0.001
+        random_delay: false
+        random_examples: true
+        random_status_code: false
+      enabled: true
+      name: mocking
+      protocols:
+      - grpc
+      - grpcs
+      - http
+      - https
+    preserve_host: false
+    priority: 0
+    protocols:
+    - http
+    - https
+    request_buffering: true
+    response_buffering: true
+    strip_path: true
+  write_timeout: 60000
+- connect_timeout: 60000
+  enabled: true
+  host: localhost
+  name: kong-admin-service
+  path: /status
+  plugins:
+  - config:
+      escape_path: false
+      host: null
+      path: /status
+      port: null
+    enabled: false
+    name: route-transformer-advanced
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+  port: 8100
+  protocol: http
+  read_timeout: 60000
+  retries: 5
+  routes:
+  - expression: http.path ~ r#"^/admin-tools(?<resource>/(metrics|status))$"#
+    https_redirect_status_code: 426
+    name: admin-route
+    plugins:
+    - config:
+        access_control:
+          default_requirements:
+          - claim_name: permissions
+            claim_values:
+            - kong:read
+            match_type: any
+          per_operation_requirements:
+          - claim_name: permissions
+            claim_values:
+            - kong:write
+            match_type: any
+            operation_id: createPlugin
+        api_specification: '{   "openapi": "3.0.0",   "info": {     "license": { "name":
+          "MIT", "url": "https://opensource.org/licenses/MIT" },     "title": "Kong
+          Admin API",     "version": "1.0.0"   },   "servers": [     { "url": "http://localhost"
+          }   ],   "security": [{ "accessCode": ["widgets.read", "widgets.write"]
+          }],   "paths": {     "/metrics": {       "get": {         "summary": "Get
+          Kong Prometheus metrics for monitoring and observability",         "description":
+          "Returns comprehensive Prometheus-format metrics including request counts,
+          latencies, bandwidth usage, plugin execution times, upstream health status,
+          and Kong Gateway performance statistics. Useful for monitoring Kong''s operational
+          health and performance characteristics.",         "operationId": "getKongMetrics",         "responses":
+          {           "200": {             "description": "Prometheus metrics in text
+          format including Kong gateway statistics, request/response metrics, plugin
+          performance data, and upstream service health indicators",             "content":
+          {               "text/plain": {                 "schema": {                   "type":
+          "string",                   "example": "# HELP kong_http_requests_total
+          Total number of HTTP requests\n# TYPE kong_http_requests_total counter\nkong_http_requests_total{service=\"my-service\",route=\"my-route\",code=\"200\"}
+          1234"                 }               }             }           },           "401":
+          { "description": "Unauthorized" }         }       }     },     "/status":
+          {       "get": {         "summary": "Get Kong Gateway runtime status and
+          health information",         "description": "Returns comprehensive Kong
+          Gateway status including memory usage statistics, worker process information,
+          server connection metrics, database synchronization status, and configuration
+          hash. Essential for monitoring Kong''s health, performance, and operational
+          state.",         "operationId": "getKongStatus",         "responses": {           "200":
+          {             "description": "Kong Gateway status information including
+          memory allocation, worker processes, connection statistics, and sync status",             "content":
+          {               "application/json": {                 "schema": {                   "type":
+          "object",                   "properties": {                     "memory":
+          {                       "type": "object",                       "properties":
+          {                         "lua_shared_dicts": {                           "type":
+          "object",                           "description": "Lua shared dictionary
+          memory allocation statistics"                         },                         "workers_lua_vms":
+          {                           "type": "array",                           "description":
+          "Memory usage per worker process",                           "items": {                             "type":
+          "object",                             "properties": {                               "pid":
+          { "type": "integer" },                               "http_allocated_gc":
+          { "type": "string" }                             }                           }                         }                       }                     },                     "server":
+          {                       "type": "object",                       "properties":
+          {                         "connections_active": { "type": "integer" },                         "connections_reading":
+          { "type": "integer" },                         "connections_writing": {
+          "type": "integer" },                         "connections_waiting": { "type":
+          "integer" },                         "connections_handled": { "type": "integer"
+          },                         "connections_accepted": { "type": "integer" },                         "total_requests":
+          { "type": "integer" }                       },                       "description":
+          "Server connection and request statistics"                     },                     "sync_v1_last_time":
+          {                       "type": "object",                       "description":
+          "Database synchronization status and timestamps"                     },                     "configuration_hash":
+          {                       "type": "string",                       "description":
+          "Current configuration hash for change detection"                     }                   }                 }               }             }           },           "401":
+          { "description": "Unauthorized" }         }       }     },     "/plugins":
+          {       "get": {         "summary": "List plugins",         "operationId":
+          "listPlugins",         "responses": {           "200": { "description":
+          "Plugins listed" },           "401": { "description": "Unauthorized" }         }       },       "post":
+          {         "summary": "Create plugin",         "operationId": "createPlugin",         "requestBody":
+          {           "content": { "application/json": { "schema": { "type": "object"
+          } } }         },         "responses": {           "201": { "description":
+          "Plugin created" },           "401": { "description": "Unauthorized" }         }       }     }   },   "components":
+          {     "schemas": {},     "securitySchemes": {       "accessCode": {         "type":
+          "oauth2",         "flows": {           "clientCredentials": {             "tokenUrl":
+          "https://some-oauth.com/token",             "scopes": {               "widgets.read":
+          "read some widgets",               "widgets.write": "write some widgets"             }           }         }       }     }   }
+          }'
+        enabled: true
+        tool_prefix: kong_admin
+      enabled: true
+      name: mcp-tool
+      protocols:
+      - http
+      - https
+    - config:
+        add:
+          body: []
+          headers: []
+          json_types: []
+          querystring: []
+        allow:
+          body: null
+        append:
+          body: []
+          headers: []
+          json_types: []
+          querystring: []
+        dots_in_keys: true
+        http_method: null
+        remove:
+          body: []
+          headers: []
+          querystring: []
+        rename:
+          body: []
+          headers: []
+          querystring: []
+        replace:
+          body: []
+          headers: []
+          json_types: []
+          querystring: []
+          uri: $(uri_captures["resource"])
+      enabled: true
+      name: request-transformer-advanced
+      protocols:
+      - grpc
+      - grpcs
+      - http
+      - https
+    preserve_host: false
+    priority: 0
+    protocols:
+    - http
+    - https
+    request_buffering: true
+    response_buffering: true
+    strip_path: true
+  write_timeout: 60000
+- connect_timeout: 60000
+  enabled: true
+  host: httpbin.org
+  name: mcp-service
+  port: 80
+  protocol: http
+  read_timeout: 60000
+  retries: 5
+  routes:
+  - https_redirect_status_code: 426
+    name: mcp-route
+    path_handling: v0
+    paths:
+    - /mcp
+    plugins:
+    - config:
+        max_tools: 1000
+        oauth:
+          audience: mcp-gateway-api
+          authorization_servers:
+          - https://some-oauth.com/.well-known/openid-configuration
+          enabled: true
+          required_scopes:
+          - invoke:gateway
+          - read:gateway
+          token_validation: jwt
+          tool_scope_filtering: true
+        server_name: kong-mcp
+        server_version: 1.0.0
+      enabled: true
+      name: mcp-server
+      protocols:
+      - http
+      - https
+    preserve_host: false
+    protocols:
+    - http
+    - https
+    regex_priority: 0
+    request_buffering: true
+    response_buffering: true
+    strip_path: false
+  - https_redirect_status_code: 426
+    name: oauth-metadata-route
+    path_handling: v0
+    paths:
+    - /.well-known/oauth-protected-resource
+    plugins:
+    - config:
+        body: |
+          {
+            "authorization_servers": [
+              "https://some-oauth.com"
+            ],
+            "resource": "http://localhost:8000/mcp",
+            "scopes_supported": ["invoke:gateway", "read:gateway", "kong:read", "kong:write"]
+          }
+        content_type: application/json
+        echo: false
+        message: null
+        status_code: 200
+        trigger: null
+      enabled: true
+      name: request-termination
+      protocols:
+      - grpc
+      - grpcs
+      - http
+      - https
+    preserve_host: false
+    protocols:
+    - http
+    - https
+    regex_priority: 0
+    request_buffering: true
+    response_buffering: true
+    strip_path: false
+  write_timeout: 60000
+- connect_timeout: 60000
+  enabled: true
+  host: mcp-test.requestcatcher.com
+  name: mcp-test.requestcatcher.com
+  path: /mcp-test
+  port: 443
+  protocol: https
+  read_timeout: 60000
+  retries: 5
+  routes:
+  - expression: http.path ^= "/public-tools/" || http.path == "/public-tools"
+    https_redirect_status_code: 426
+    name: public-route
+    plugins:
+    - config:
+        access_control: null
+        api_specification: '{"openapi": "3.0.0", "info": {"title": "Public Tools API",
+          "version": "1.0.0"}, "paths": {"/get": {"get": {"summary": "HTTP GET test",
+          "operationId": "httpGet", "responses": {"200": {"description": "GET response"}}}},
+          "/post": {"post": {"summary": "HTTP POST test", "operationId": "httpPost",
+          "requestBody": {"content": {"application/json": {"schema": {"type": "object"}}}},
+          "responses": {"200": {"description": "POST response"}}}}, "/status/200":
+          {"get": {"summary": "Return status 200", "operationId": "status200", "responses":
+          {"200": {"description": "Status 200"}}}}}}'
+        enabled: true
+        tool_prefix: public
+      enabled: true
+      name: mcp-tool
+      protocols:
+      - http
+      - https
+    preserve_host: false
+    priority: 0
+    protocols:
+    - http
+    - https
+    request_buffering: true
+    response_buffering: true
+    strip_path: false
+  - expression: http.path ^= "/route-test/" || http.path == "/route-test"
+    https_redirect_status_code: 426
+    name: route-test
+    plugins:
+    - config:
+        access_control:
+          default_requirements:
+          - claim_name: permissions
+            claim_values:
+            - read:gateway
+            match_type: any
+          per_operation_requirements: null
+        api_specification: '{   "openapi": "3.0.0",   "info": { "title": "RequestCatcher
+          API", "version": "1.0.0" },   "paths": {     "/": {       "get": {         "summary":
+          "Capture GET request",         "operationId": "getRoot",         "parameters":
+          [           {             "name": "test_param",             "in": "query",             "schema":
+          { "type": "string" }           }         ],         "responses": { "200":
+          { "description": "Request captured" } }       }     },     "/post": {       "post":
+          {         "summary": "Capture POST request",         "operationId": "postData",         "requestBody":
+          {           "content": { "application/json": { "schema": { "type": "object"
+          } } }         },         "responses": { "200": { "description": "Request
+          captured" } }       }     }   } }'
+        enabled: true
+        tool_prefix: requestcatcher
+      enabled: true
+      name: mcp-tool
+      protocols:
+      - http
+      - https
+    preserve_host: false
+    priority: 0
+    protocols:
+    - http
+    - https
+    request_buffering: true
+    response_buffering: true
+    strip_path: false
+  write_timeout: 60000
