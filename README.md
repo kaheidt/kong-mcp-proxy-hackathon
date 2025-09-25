@@ -248,6 +248,46 @@ plugins:
         match_type: "any"
 ```
 
+#### Tool Name Generation
+
+The MCP tool plugin automatically generates tool names from your OpenAPI specification using this formula:
+
+```
+{tool_prefix}_{http_method}_{simplified_path}
+```
+
+**Components:**
+- **`tool_prefix`**: From plugin config (falls back to route name if not specified)
+- **`http_method`**: HTTP method in lowercase (`get`, `post`, `put`, etc.)
+- **`simplified_path`**: OpenAPI path with `/` → `_`, parameters unwrapped (`{id}` → `id`)
+
+**Examples:**
+| OpenAPI Path | HTTP Method | tool_prefix | Final Tool Name |
+|--------------|-------------|-------------|------------------|
+| `/status` | GET | `admin_api` | `admin_api_get_status` |
+| `/plugins/{id}` | GET | `kong_admin` | `kong_admin_get_plugins_id` |
+| `/users/{userId}/posts` | POST | `api` | `api_post_users_userid_posts` |
+
+> 🔧 **Tool names are sanitized** to MCP compliance: only `[a-z0-9_-]` characters allowed.
+
+#### Tool Descriptions
+
+The plugin uses OpenAPI specification fields to create tool descriptions that AI clients see:
+
+1. **`summary`** field (preferred) → Tool description  
+2. **`description`** field (fallback) → Tool description
+3. **Auto-generated** (last resort) → `"{method_description} {path}"`
+
+**Example:** 
+```yaml
+"/status":
+  get:
+    summary: "Get Kong status"        # ← This becomes the tool description
+    description: "Detailed info..."   # ← Used if summary is missing
+```
+
+**Result:** AI clients see `"Get Kong status"` as the tool description, making it clear what the tool does.
+
 ## 📊 Environment Variables Reference
 
 | Variable | Description | Example | Required |
