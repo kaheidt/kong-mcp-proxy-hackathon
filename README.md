@@ -326,7 +326,7 @@ The plugin uses OpenAPI specification fields to create tool descriptions that AI
 | `CONTROL_PLANE_ID` | Control plane UUID | `59efe5f5-607d-4c75-...` | ✅ |
 | `IMAGE_NAME` | Docker image name | `kong-mcp-plugin` | |
 | `CONTAINER_NAME` | Docker container name | `kong-mcp` | |
-| `ID` | Konnect cluster id (prefix before `.us.cp.konghq.com:443`) | `abcd123456` | ✅ |
+| `KONG_CLUSTER_ID` | Konnect cluster id (prefix before `.us.cp.konghq.com:443`) | `abcd123456` | ✅ |
 
 ### Getting Your Konnect Token
 The token is used for registering custom plugins, and for executing deck commands.
