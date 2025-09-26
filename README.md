@@ -36,9 +36,9 @@ graph TB
     F --> H
     F --> I
     
-    style D fill:#f9f,stroke:#333,stroke-width:4px
-    style E fill:#bbf,stroke:#333,stroke-width:2px
-    style F fill:#bfb,stroke:#333,stroke-width:2px
+    style D fill:#0000CC,stroke:#333,stroke-width:4px
+    style E fill:#990000,stroke:#333,stroke-width:2px
+    style F fill:#6600CC,stroke:#333,stroke-width:2px
 ```
 
 ## 🌟 What Makes This Special
@@ -175,8 +175,8 @@ graph TD
     E --> F
     F --> G
     
-    style A fill:#f9f,stroke:#333,stroke-width:2px
-    style E fill:#bfb,stroke:#333,stroke-width:2px
+    style A fill:#6600CC,stroke:#333,stroke-width:2px
+    style E fill:#990000,stroke:#333,stroke-width:2px
 ```
 
 ### OAuth Security Flow
