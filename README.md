@@ -130,11 +130,18 @@ Invoke-RestMethod -Uri "http://localhost:8000/mcp" -Method Post -Body $body -Hea
 sequenceDiagram
     participant AI as AI Client (Claude/VS Code)
     participant MCP as MCP Server Plugin
+    participant IDP as OAuth Identity Provider (IDP)
     participant OAuth as OAuth Validator
     participant Tool as Tool Registry
     participant API as Target API
 
     AI->>MCP: POST /mcp (tools/list)
+    MCP->>AI: 401 with WWW-Authenticate header
+    AI->>MCP: GET /.well-known/oauth-protected-resource
+    MCP->>AI: Auth Server, Resource, Scopes Supported
+    Note left of AI: Human in the loop
+    AI->>IDP: Authcode Grant Flow
+    Note over IDP: See below for oauth flow
     MCP->>OAuth: Validate JWT Token
     OAuth-->>MCP: User Identity + Scopes
     MCP->>Tool: Get Available Tools
@@ -183,23 +190,26 @@ graph TD
 
 ```mermaid
 sequenceDiagram
-    participant Client as MCP Client
-    participant Kong as Kong MCP Proxy  
+    participant Client as MCP Client (Browser)
+    participant Kong as Kong MCP Proxy
     participant Auth0 as OAuth Provider
     participant API as Protected API
 
-    Note over Client,API: OAuth 2.1 Client Credentials Flow
-    
-    Client->>Auth0: POST /oauth/token<br/>(client_credentials)
+    Note over Client,Auth0: OAuth 2.1 Authorization Code Grant Flow
+
+    Client->>Auth0: GET /authorize<br/>(client_id, redirect_uri, response_type=code)
+    Auth0-->>Client: Redirect with Authorization Code
+
+    Client->>Auth0: POST /oauth/token<br/>(authorization_code, client_id, client_secret, redirect_uri)
     Auth0-->>Client: Access Token (JWT)
-    
+
     Client->>Kong: POST /mcp<br/>Authorization: Bearer <jwt>
     Kong->>Auth0: GET /.well-known/jwks.json<br/>(validate signature)
     Auth0-->>Kong: Public Keys
     Kong->>Kong: Validate JWT + Scopes
     Kong->>API: Proxy Request
     API-->>Kong: API Response
-    Kong-->>Client: MCP Tool Result
+    Kong-->>Client: MCP Tool Result 
 ```
 
 ## 🛠️ Configuration Examples
