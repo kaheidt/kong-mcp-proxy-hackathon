@@ -159,31 +159,45 @@ sequenceDiagram
 ### Plugin Architecture
 
 ```mermaid
-graph TD
-    subgraph "Kong Gateway"
-        subgraph "MCP Server Plugin (Global)"
-            A[JSON-RPC Handler]
-            B[Method Router]
-            C[OAuth Validator]
-            D[Tool Aggregator]
-        end
-        
-        subgraph "MCP Tool Plugins (Per Route)"
-            E[OpenAPI Parser]
-            F[Tool Generator]
-            G[Access Controller]
-        end
-    end
-    
+flowchart TB
+ subgraph subGraph0["MCP Server Plugin (Global)"]
+        A["JSON-RPC Handler"]
+        B["Method Router"]
+        C["OAuth Validator"]
+        D["Tool Aggregator"]
+  end
+ subgraph subGraph1["MCP Tool Plugins (Route)"]
+        E["OpenAPI Parser"]
+        F["Tool Generator"]
+        G["Access Controller"]
+  end
+ subgraph subGraph2["Kong Gateway"]
+        subGraph0
+        subGraph1
+  end
     A --> B
     B --> C
     C --> D
     D --> E
     E --> F
     F --> G
-    
-    style A fill:#6600CC,stroke:#333,stroke-width:2px
-    style E fill:#990000,stroke:#333,stroke-width:2px
+
+    A@{ shape: subproc}
+    B@{ shape: subproc}
+    C@{ shape: subproc}
+    D@{ shape: subproc}
+    E@{ shape: subproc}
+    F@{ shape: subproc}
+    G@{ shape: subproc}
+    style A fill:#6600CC,stroke:#333,stroke-width:2px,color:#FFFFFF
+    style E fill:#990000,stroke:#333,stroke-width:2px,color:#FFFFFF
+    style subGraph0 stroke:#BBDEFB,color:#FFFFFF,fill:#2962FF
+    style subGraph1 stroke:#FFCDD2,color:#FFFFFF,fill:#D50000
+    style subGraph2 stroke:#E1BEE7,fill:#AA00FF,color:#FFFFFF
+
+
+
+
 ```
 
 ### OAuth Security Flow
