@@ -127,33 +127,38 @@ Invoke-RestMethod -Uri "http://localhost:8000/mcp" -Method Post -Body $body -Hea
 ### System Flow
 
 ```mermaid
+---
+config:
+  theme: redux-dark-color
+---
 sequenceDiagram
-    participant AI as AI Client (Claude/VS Code)
-    participant MCP as MCP Server Plugin
-    participant IDP as OAuth Identity Provider (IDP)
-    participant OAuth as OAuth Validator
-    participant Tool as Tool Registry
-    participant API as Target API
-
-    AI->>MCP: POST /mcp (tools/list)
-    MCP->>AI: 401 with WWW-Authenticate header
-    AI->>MCP: GET /.well-known/oauth-protected-resource
-    MCP->>AI: Auth Server, Resource, Scopes Supported
-    Note left of AI: Human in the loop
-    AI->>IDP: Authcode Grant Flow
-    Note over IDP: See below for oauth flow
-    MCP->>OAuth: Validate JWT Token
-    OAuth-->>MCP: User Identity + Scopes
-    MCP->>Tool: Get Available Tools
-    Tool-->>MCP: Filtered Tool List
-    MCP-->>AI: JSON-RPC Response
-
-    AI->>MCP: POST /mcp (tools/call)
-    MCP->>OAuth: Validate JWT + Scopes
-    OAuth-->>MCP: Authorization OK
-    MCP->>API: Execute Tool Request
-    API-->>MCP: API Response
-    MCP-->>AI: Tool Result
+  participant AI as AI Client (Claude/VS Code)
+  participant MCP as MCP Server Plugin
+  participant Resource as OAuth Protected Resource Route
+  participant IDP as OAuth Identity Provider (IDP)
+  participant OAuth as OAuth Validator
+  participant Tool as Tool Registry
+  participant API as Target API
+  AI ->> MCP: POST /mcp (Initialize)
+  MCP -->> AI: 401 with WWW-Authenticate header
+  AI ->> Resource: GET /.well-known/oauth-protected-resource
+  Resource -->> AI: Auth Server, Resource, Scopes Supported
+  Note left of AI: Human in the loop
+  AI ->> IDP: Authcode Grant Flow
+  Note over IDP: See below for oauth flow
+  MCP ->> OAuth: Validate JWT Token
+  OAuth -->> MCP: User Identity + Scopes
+  MCP -->> AI: Initialization Response
+  AI ->> MCP: POST /mcp (tools/list)
+  MCP ->> Tool: Get Available Tools
+  Tool -->> MCP: Filtered Tool List
+  MCP -->> AI: JSON-RPC Response
+  AI ->> MCP: POST /mcp (tools/call)
+  MCP ->> OAuth: Validate JWT + Scopes
+  OAuth -->> MCP: Authorization OK
+  MCP ->> API: Execute Tool Request
+  API -->> MCP: API Response
+  MCP -->> AI: Tool Result
 ```
 
 ### Plugin Architecture
