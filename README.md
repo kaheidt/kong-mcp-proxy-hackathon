@@ -4,6 +4,7 @@
 
 ![Project Logo](images/KongMCP.png)
 
+[Check out the presentation on Youtube](https://youtu.be/IvPs0mYQEfw)
 
 ## 🎯 The Big Idea
 
