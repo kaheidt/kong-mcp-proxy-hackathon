@@ -2,9 +2,8 @@
 
 > **Hackathon POC**: Transform Kong Gateway into a no-code Model Context Protocol (MCP) proxy, enabling AI applications to discover and execute tools against Kong-proxied APIs through standardized JSON-RPC 2.0 interface.
 
-![Project Logo](images/KongMCP.png)
-
-[Check out the presentation on Youtube](https://youtu.be/IvPs0mYQEfw)
+## Youtube Presentation
+[![Youtube](https://img.youtube.com/vi/IvPs0mYQEfw/0.jpg)](https://www.youtube.com/watch?v=IvPs0mYQEfw)
 
 ## 🎯 The Big Idea
 
