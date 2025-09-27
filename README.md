@@ -2,6 +2,9 @@
 
 > **Hackathon POC**: Transform Kong Gateway into a no-code Model Context Protocol (MCP) proxy, enabling AI applications to discover and execute tools against Kong-proxied APIs through standardized JSON-RPC 2.0 interface.
 
+![Project Logo](images/KongMCP.png)
+
+
 ## 🎯 The Big Idea
 
 Imagine if you could take **any API** behind Kong Gateway and instantly make it available to AI applications like Claude, ChatGPT, or VS Code Copilot - without writing a single line of code. That's exactly what this Kong MCP Proxy does!
