@@ -344,7 +344,7 @@ One of the most powerful security features of Kong MCP Proxy is **dynamic tool f
 
 ### How Tool Filtering Works
 
-The MCP server plugin examines JWT claims (specifically the `permissions` array) and filters the available tools based on the access control requirements defined in each MCP tool plugin configuration.
+The MCP server plugin examines JWT claims (in the example config, we specifically use the `permissions` array, but you can use any claims you want) and filters the available tools based on the access control requirements defined in each MCP tool plugin configuration.
 
 ### Real-World Example
 
